@@ -1,0 +1,105 @@
+{% extends "_layouts/cp" %}
+
+{% set allsections = craft.sitemap.getAllSections %}
+
+{% set myStyles %}
+    .sitemap {
+        border-spacing: 0;
+        width: 80%;
+        margin: 0 auto;
+    }
+
+    .sitemap tr:nth-child(even) {
+        background-color: #ededed;
+    }
+
+    .sitemap th, .sitemap td {
+        vertical-align: middle;
+        padding: 30px 20px !important;
+    }
+
+    .sitemap th {
+        font-size: 1.1em;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .sitemap td {
+        padding: 25px 20px !important;
+    }
+
+    input[type=number] {
+        width: 80px;
+        text-align: center;
+    }
+
+{% endset %}
+
+{% includeCss myStyles %}
+
+{% set title = "Sitemap Configuration"|t %}
+
+{% set content %}
+
+<form method="post" action="" accept-charset="UTF-8">
+    <input type="hidden" name="action" value="sitemap/saveSections">
+
+    <table class="sitemap">
+        <thead>
+            <tr>
+                <th>Include</th>
+                <th>Section</th>
+                <th>Entries</th>
+                <th>URL Format</th>
+                <th>Change Frequency</th>
+                <th>Priority</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% set sections = allsections is empty ? craft.sections.getEditableSections() : allsections %}
+        {% set cnt = 0 %}
+        {% for section in sections %}
+            {% if section.type != 'structure' and section.urlformat is not empty %}
+                <tr>
+                    <td>
+                        <input type="hidden" name="sections[{{cnt}}][sectionId]" value="{{ section.id }}">
+                        <input type="checkbox" name="sections[{{cnt}}][included]" value="included">
+                    </td>
+                    <td>{{ section.name }}</td>
+                    <td>{{ craft.entries.section(section)|length }}</td>
+                    <td>{{ (section.isHomepage() ? '<span data-icon="home" title="Homepage"></span>' : section.urlformat)|raw  }}</td>
+                    <td>
+                        <select name="sections[{{cnt}}][frequency]">
+                            <option value="day">Daily</option>
+                            <option value="week">Weekly</option>
+                            <option value="month">Monthly</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" name="sections[{{cnt}}][priority]" value="{{ cnt + 1 }}">
+                    </td>
+                </tr>
+            {% set cnt = cnt + 1 %}
+            {% endif %}
+        {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6">
+                    <input class="btn submit" type="submit" value="{{ 'Save'|t }}">
+                    <button class="btn submit ping">{{ 'Save and Ping'|t }}</button>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</form>
+
+{% endset %}
+
+{% set myJs %}
+    $('.ping').on('click', function(e) {
+        $(this).closest('form').find('input[name=action]').val('sitemap/pingSections');
+
+    });
+{% endset %}
+
+{% includeJs myJs %}

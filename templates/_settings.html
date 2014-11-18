@@ -1,0 +1,19 @@
+{% import "_includes/forms" as forms %}
+
+
+{{ forms.lightswitchField({
+label:        "Enable Site Route*"|t,
+id:           'siteRoute',
+name:         'siteRoute',
+on:           settings.siteRoute,
+errors:       settings.getErrors('siteRoute')
+}) }}
+
+
+{{ forms.lightswitchField({
+label:        "Multi Locale Sitemap Enabled*"|t,
+id:           'multiLocale',
+name:         'multiLocale',
+on:           settings.multiLocale,
+errors:       settings.getErrors('multiLocale')
+}) }}
