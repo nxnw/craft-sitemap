@@ -27,4 +27,9 @@ class SitemapPlugin extends BasePlugin
     {
         return true;
     }
+
+    public function onBeforeUninstall()
+    {
+        unlink($_SERVER['DOCUMENT_ROOT'] . '/sitemap.xml');
+    }
 }

@@ -1,7 +1,7 @@
 Craft Sitemap Plugin
 =====================
 
-### I could still use help testing and bug fixing. If you find any issues put them in the Github issues. Thanks
+### Summary
 
 This is a plugin for the Craft CMS to add sitemap generation functionality. Based on the options you select for your Sections, it generates a sitemap.xml file for all the entries of the sections you want included.  Entries must be live to be included in sitemap.xml file.
 
