@@ -119,6 +119,6 @@ class SitemapService extends BaseApplicationComponent
             'limit' => 1
         ));
 
-        return SitemapModel::populateModel($sections, 'id');
+        return SitemapModel::populateModel($sections);
     }
 }

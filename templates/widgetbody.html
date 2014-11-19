@@ -1,0 +1,7 @@
+
+{% set ping_date = craft.sitemap.getLastPingDate() %}
+{% if ping_date is not null %}
+    <h3>{{ ping_date.date }} at {{ ping_date.time }}</h3>
+{% else %}
+    <h3><span class="required"></span>&nbsp;&nbsp;Search Engines have not yet been pinged</h3>
+{% endif %}
