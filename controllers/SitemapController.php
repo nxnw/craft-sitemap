@@ -21,7 +21,7 @@ class SitemapController extends BaseController
             }
             $no_err = craft()->sitemap->saveSections($mod);
         }
-        if(!$no_err) {
+        if($no_err) {
             craft()->userSession->setNotice(Craft::t('Sitemap Created'));
         } else {
             craft()->userSession->setNotice(Craft::t('Error'));

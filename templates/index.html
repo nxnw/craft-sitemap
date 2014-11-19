@@ -1,4 +1,5 @@
 {% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
 
 {% set allsections = craft.sitemap.getAllSections() %}
 
@@ -15,16 +16,20 @@
 
     .sitemap th, .sitemap td {
         vertical-align: middle;
-        padding: 30px 20px !important;
     }
 
     .sitemap th {
         font-size: 1.1em;
-        border-bottom: 1px solid #e0e0e0;
+        padding: 30px 20px !important;
     }
 
     .sitemap td {
-        padding: 25px 20px !important;
+        padding-left: 5px; !important
+    }
+
+    .btns-container {
+        padding: 40px !important;
+        background-color: #ffffff;
     }
 
     input[type=number] {
@@ -36,6 +41,26 @@
         text-align: center;
     }
 
+    @media screen and (max-width: 835px) {
+        .sitemap {
+            width: 100%;
+        }
+        .hide1 {
+            display: none;
+        }
+    }
+
+    @media screen and (max-width: 560px) {
+        .hide {
+            display: none;
+        }
+        .pane {
+            padding: 0 !important;
+        }
+        .btns-container {
+            text-align: center !important;
+        }
+    }
 {% endset %}
 
 {% includeCss myStyles %}
@@ -46,14 +71,14 @@
 <form method="post" action="" accept-charset="UTF-8">
     <input type="hidden" name="action" value="sitemap/saveSections">
 
-    <table class="sitemap">
+    <table id="sitemap" class="sitemap data">
         <thead>
-            <tr>
-                <th>Include</th>
+            <tr class="centeralign">
+                <th>Inc<span class="hide">lude</span></th>
                 <th>Section</th>
-                <th>Entries</th>
-                <th>URL Format</th>
-                <th>Change Frequency</th>
+                <th class="hide">Entries</th>
+                <th class="hide1">URL Format</th>
+                <th><span class="hide1">Change</span> Freq<span class="hide">uency</span></th>
                 <th>Priority</th>
             </tr>
         </thead>
@@ -64,34 +89,66 @@
             {% set section = craft.sections.getSectionById(allsections is empty ? sect.id : sect.sectionId) %}
             {% if section.type != 'structure' and section.urlformat is not empty %}
                 <tr>
-                    <td>
-                        <input type="hidden" name="sections[{{cnt}}][id]" value="{{ allsections is empty ? '' : sect.id }}">
-                        <input type="hidden" name="sections[{{cnt}}][sectionId]" value="{{ section.id }}">
-                        <input type="hidden" name="sections[{{cnt}}][ping_date]" value="{{ allsections is empty ? '' : sect.ping_date }}">
-                        <input type="checkbox" name="sections[{{cnt}}][included]" {{ allsections is empty ? '' : (sect.included ? 'checked' : '') }} value="1">
+                    <td class="centeralign">
+                        {{ forms.hidden({
+                            name: 'sections['~cnt~'][id]',
+                            value: allsections is empty ? '' : sect.id
+                        }) }}
+
+                        {{ forms.hidden({
+                            name: 'sections['~cnt~'][sectionId]',
+                            value: section.id
+                        }) }}
+
+                        {{ forms.hidden({
+                            name: 'sections['~cnt~'][ping_date]',
+                            value: allsections is empty ? '' : sect.ping_date|date('Y-m-d H:i:s')
+                        }) }}
+
+                        {{ forms.checkbox({
+                            name: 'sections['~cnt~'][included]',
+                            checked: allsections is empty ? null : (sect.included ? 'checked' : null),
+                            value: 1
+                        }) }}
                     </td>
                     <td>{{ section.name }}</td>
-                    <td>{{ craft.entries.section(section)|length }}</td>
-                    <td>{{ (section.isHomepage() ? '<span data-icon="home" title="Homepage"></span>' : section.urlformat)|raw  }}</td>
-                    <td>
-                        <select name="sections[{{cnt}}][frequency]">
-                            {% set freq = allsections is empty ? '' : sect.frequency %}
-                            <option {{ freq == 'always' ? 'selected' : '' }} value="always">Always</option>
-                            <option {{ freq == 'hourly' ? 'selected' : '' }} value="hourly">Hourly</option>
-                            <option {{ freq == 'daily' ? 'selected' : '' }} value="daily">Daily</option>
-                            <option {{ freq == 'weekly' or freq is empty ? 'selected' : '' }} value="weekly">Weekly</option>
-                            <option {{ freq == 'monthly' ? 'selected' : '' }} value="monthly">Monthly</option>
-                            <option {{ freq == 'yearly' ? 'selected' : '' }} value="yearly">Yearly</option>
-                            <option {{ freq == 'never' ? 'selected' : '' }} value="never">Never</option>
-                        </select>
+                    <td class="hide centeralign">{{ craft.entries.section(section)|length }}</td>
+                    <td class="hide1">{{ (section.isHomepage() ? '<span data-icon="home" title="Homepage"></span>' : section.urlformat)|raw  }}</td>
+                    <td class="centeralign">
+                        {% set freq = allsections is empty ? '' : sect.frequency %}
+                        {{ forms.select({
+                            name: 'sections['~cnt~'][frequency]',
+                            value: freq,
+                            options: [
+                                {label: 'Always', value: 'always'},
+                                {label: 'Hourly', value: 'hourly'},
+                                {label: 'Daily', value: 'daily'},
+                                {label: 'Weekly', value: 'weekly'},
+                                {label: 'Monthly', value: 'monthly'},
+                                {label: 'Yearly', value: 'yearly'},
+                                {label: 'Never', value: 'never'}
+                            ]
+                        }) }}
                     </td>
-                    <td>
-                        <select name="sections[{{cnt}}][priority]">
-                            {% set nums = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] %}
-                            {% for n in nums %}
-                                <option {{ allsections is not empty and n == sect.priority or n == 0.5 ? 'selected' : '' }} value="{{ n }}">{{ n }}</option>
-                            {% endfor %}
-                        </select>
+                    <td class="centeralign">
+                        {% set prior = allsections is empty ? '0.5' : sect.priority %}
+                        {{ forms.select({
+                            name: 'sections['~cnt~'][priority]',
+                            value: prior,
+                            options: [
+                                {label: '0.0', value: '0.0'},
+                                {label: '0.1', value: '0.1'},
+                                {label: '0.2', value: '0.2'},
+                                {label: '0.3', value: '0.3'},
+                                {label: '0.4', value: '0.4'},
+                                {label: '0.5', value: '0.5'},
+                                {label: '0.6', value: '0.6'},
+                                {label: '0.7', value: '0.7'},
+                                {label: '0.8', value: '0.8'},
+                                {label: '0.9', value: '0.9'},
+                                {label: '1.0', value: '1.0'}
+                            ]
+                        }) }}
                     </td>
                 </tr>
             {% set cnt = cnt + 1 %}
@@ -101,7 +158,6 @@
         <tfoot>
             <tr>
                 <th colspan="7">
-                    <br/>
                     {% set ping_date = craft.sitemap.getLastPingDate() %}
                     {% if ping_date is not empty %}
                         <h3>Search Engines were last pinged on {{ ping_date.date }} at {{ ping_date.time }}</h3>
@@ -109,9 +165,9 @@
                 </th>
             </tr>
             <tr>
-                <td colspan="7">
+                <td colspan="7" class="btns-container">
                     <input class="btn submit" type="submit" value="{{ 'Save'|t }}">
-                    <button class="btn submit ping">{{ 'Save and Ping'|t }}</button>
+                    <button class="btn submit ping">{{ 'Save & Ping'|t }}</button>
                 </td>
             </tr>
         </tfoot>
@@ -124,6 +180,10 @@
     $('.ping').on('click', function(e) {
         $(this).closest('form').find('input[name=action]').val('sitemap/pingSections');
 
+    });
+
+    new Craft.AdminTable({
+        tableSelector: '#sitemap'
     });
 {% endset %}
 
