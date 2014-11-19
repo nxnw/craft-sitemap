@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
 
-{% set allsections = craft.sitemap.getAllSections %}
+{% set allsections = craft.sitemap.getAllSections() %}
 
 {% set myStyles %}
     .sitemap {
@@ -32,6 +32,10 @@
         text-align: center;
     }
 
+    th h3 {
+        text-align: center;
+    }
+
 {% endset %}
 
 {% includeCss myStyles %}
@@ -39,7 +43,6 @@
 {% set title = "Sitemap Configuration"|t %}
 
 {% set content %}
-
 <form method="post" action="" accept-charset="UTF-8">
     <input type="hidden" name="action" value="sitemap/saveSections">
 
@@ -57,25 +60,38 @@
         <tbody>
         {% set sections = allsections is empty ? craft.sections.getEditableSections() : allsections %}
         {% set cnt = 0 %}
-        {% for section in sections %}
+        {% for sect in sections %}
+            {% set section = craft.sections.getSectionById(allsections is empty ? sect.id : sect.sectionId) %}
             {% if section.type != 'structure' and section.urlformat is not empty %}
                 <tr>
                     <td>
+                        <input type="hidden" name="sections[{{cnt}}][id]" value="{{ allsections is empty ? '' : sect.id }}">
                         <input type="hidden" name="sections[{{cnt}}][sectionId]" value="{{ section.id }}">
-                        <input type="checkbox" name="sections[{{cnt}}][included]" value="included">
+                        <input type="hidden" name="sections[{{cnt}}][ping_date]" value="{{ allsections is empty ? '' : sect.ping_date }}">
+                        <input type="checkbox" name="sections[{{cnt}}][included]" {{ allsections is empty ? '' : (sect.included ? 'checked' : '') }} value="1">
                     </td>
                     <td>{{ section.name }}</td>
                     <td>{{ craft.entries.section(section)|length }}</td>
                     <td>{{ (section.isHomepage() ? '<span data-icon="home" title="Homepage"></span>' : section.urlformat)|raw  }}</td>
                     <td>
                         <select name="sections[{{cnt}}][frequency]">
-                            <option value="day">Daily</option>
-                            <option value="week">Weekly</option>
-                            <option value="month">Monthly</option>
+                            {% set freq = allsections is empty ? '' : sect.frequency %}
+                            <option {{ freq == 'always' ? 'selected' : '' }} value="always">Always</option>
+                            <option {{ freq == 'hourly' ? 'selected' : '' }} value="hourly">Hourly</option>
+                            <option {{ freq == 'daily' ? 'selected' : '' }} value="daily">Daily</option>
+                            <option {{ freq == 'weekly' or freq is empty ? 'selected' : '' }} value="weekly">Weekly</option>
+                            <option {{ freq == 'monthly' ? 'selected' : '' }} value="monthly">Monthly</option>
+                            <option {{ freq == 'yearly' ? 'selected' : '' }} value="yearly">Yearly</option>
+                            <option {{ freq == 'never' ? 'selected' : '' }} value="never">Never</option>
                         </select>
                     </td>
                     <td>
-                        <input type="number" name="sections[{{cnt}}][priority]" value="{{ cnt + 1 }}">
+                        <select name="sections[{{cnt}}][priority]">
+                            {% set nums = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] %}
+                            {% for n in nums %}
+                                <option {{ allsections is not empty and n == sect.priority or n == 0.5 ? 'selected' : '' }} value="{{ n }}">{{ n }}</option>
+                            {% endfor %}
+                        </select>
                     </td>
                 </tr>
             {% set cnt = cnt + 1 %}
@@ -84,7 +100,16 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="6">
+                <th colspan="7">
+                    <br/>
+                    {% set ping_date = craft.sitemap.getLastPingDate() %}
+                    {% if ping_date is not empty %}
+                        <h3>Search Engines were last pinged on {{ ping_date.date }} at {{ ping_date.time }}</h3>
+                    {% endif %}
+                </th>
+            </tr>
+            <tr>
+                <td colspan="7">
                     <input class="btn submit" type="submit" value="{{ 'Save'|t }}">
                     <button class="btn submit ping">{{ 'Save and Ping'|t }}</button>
                 </td>

@@ -27,19 +27,4 @@ class SitemapPlugin extends BasePlugin
     {
         return true;
     }
-
-    protected function defineSettings()
-    {
-        return array(
-            'siteRoute' => AttributeType::Bool,
-            'multiLocale' => AttributeType::Bool
-        );
-    }
-
-    public function getSettingsHtml()
-    {
-        return craft()->templates->render('sitemap/_settings', array(
-            'settings' => $this->getSettings()
-        ));
-    }
 }
