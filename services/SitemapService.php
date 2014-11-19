@@ -27,6 +27,13 @@ class SitemapService extends BaseApplicationComponent
         return SitemapModel::populateModels($sections, 'id');
     }
 
+    public function getSectionById($id)
+    {
+        $section = $this->sectionRecord->find('sectionId=:id', array('id' => $id));
+
+        return SitemapModel::populateModel($section);
+    }
+
     public function saveSections(SitemapModel &$model)
     {
             if($id = $model->getAttribute('id')) {
@@ -61,13 +68,16 @@ class SitemapService extends BaseApplicationComponent
             $entries = $entRec->findAll('sectionId=:id', array('id' => $section->sectionId));
             $models = EntryModel::populateModels($entries);
             foreach($models as $entry) {
-                $element = ElementLocaleRecord::model()->find('elementId=:id', array('id' => $entry->id));
-                $content .= "\t<url>\n";
-                $content .= "\t\t<loc>".$base_url.$element->uri."</loc>\n";
-                $content .= "\t\t<lastmod>".$entry->dateUpdated."</lastmod>\n";
-                $content .= "\t\t<changefreq>".$section->frequency."</changefreq>\n";
-                $content .= "\t\t<priority>".$section->priority."</priority>\n";
-                $content .= "\t</url>\n";
+                $element = ElementRecord::model()->find('id=:id', array('id' => $entry->id));
+                if($element->enabled == 1) {
+                    $elementLoc = ElementLocaleRecord::model()->find('elementId=:id', array('id' => $entry->id));
+                    $content .= "\t<url>\n";
+                    $content .= "\t\t<loc>" . $base_url . ($elementLoc->uri == '__home__' ? '' : $elementLoc->uri) . "</loc>\n";
+                    $content .= "\t\t<lastmod>" . $entry->dateUpdated . "</lastmod>\n";
+                    $content .= "\t\t<changefreq>" . $section->frequency . "</changefreq>\n";
+                    $content .= "\t\t<priority>" . $section->priority . "</priority>\n";
+                    $content .= "\t</url>\n";
+                }
             }
         }
         $content .= "</urlset>";

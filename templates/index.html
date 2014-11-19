@@ -83,16 +83,16 @@
             </tr>
         </thead>
         <tbody>
-        {% set sections = allsections is empty ? craft.sections.getEditableSections() : allsections %}
+        {% set sections = craft.sections.getAllSections() %}
         {% set cnt = 0 %}
-        {% for sect in sections %}
-            {% set section = craft.sections.getSectionById(allsections is empty ? sect.id : sect.sectionId) %}
+        {% for section in sections %}
+            {% set sect = craft.sitemap.getSectionById(section.id) %}
             {% if section.type != 'structure' and section.urlformat is not empty %}
                 <tr>
                     <td class="centeralign">
                         {{ forms.hidden({
                             name: 'sections['~cnt~'][id]',
-                            value: allsections is empty ? '' : sect.id
+                            value: sect.id is empty ? '' : sect.id
                         }) }}
 
                         {{ forms.hidden({
@@ -102,12 +102,12 @@
 
                         {{ forms.hidden({
                             name: 'sections['~cnt~'][ping_date]',
-                            value: allsections is empty ? '' : sect.ping_date|date('Y-m-d H:i:s')
+                            value: sect.ping_date is empty ? '' : sect.ping_date|date('Y-m-d H:i:s')
                         }) }}
 
                         {{ forms.checkbox({
                             name: 'sections['~cnt~'][included]',
-                            checked: allsections is empty ? null : (sect.included ? 'checked' : null),
+                            checked: sect.included is empty ? null : (sect.included ? 'checked' : null),
                             value: 1
                         }) }}
                     </td>
@@ -115,10 +115,9 @@
                     <td class="hide centeralign">{{ craft.entries.section(section)|length }}</td>
                     <td class="hide1">{{ (section.isHomepage() ? '<span data-icon="home" title="Homepage"></span>' : section.urlformat)|raw  }}</td>
                     <td class="centeralign">
-                        {% set freq = allsections is empty ? '' : sect.frequency %}
                         {{ forms.select({
                             name: 'sections['~cnt~'][frequency]',
-                            value: freq,
+                            value: sect.frequency is empty ? 'weekly' : sect.frequency,
                             options: [
                                 {label: 'Always', value: 'always'},
                                 {label: 'Hourly', value: 'hourly'},
@@ -131,10 +130,9 @@
                         }) }}
                     </td>
                     <td class="centeralign">
-                        {% set prior = allsections is empty ? '0.5' : sect.priority %}
                         {{ forms.select({
                             name: 'sections['~cnt~'][priority]',
-                            value: prior,
+                            value: sect.priority is empty ? '0.5' : sect.priority,
                             options: [
                                 {label: '0.0', value: '0.0'},
                                 {label: '0.1', value: '0.1'},
@@ -159,8 +157,10 @@
             <tr>
                 <th colspan="7">
                     {% set ping_date = craft.sitemap.getLastPingDate() %}
-                    {% if ping_date is not empty %}
-                        <h3>Search Engines were last pinged on {{ ping_date.date }} at {{ ping_date.time }}</h3>
+                    {% if ping_date is not null %}
+                        {% if ping_date is not empty %}
+                            <h3>Search Engines were last pinged on {{ ping_date.date }} at {{ ping_date.time }}</h3>
+                        {% endif %}
                     {% endif %}
                 </th>
             </tr>
