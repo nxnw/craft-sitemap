@@ -19,3 +19,8 @@ This is a plugin for the Craft CMS to add sitemap generation functionality. Base
 5. Either click
     - 'Save' to just save your configurations and generate the sitemap
     - 'Save & Ping' to save configurations, generate the sitemap, AND ping search engines to let them know to crawl your site
+
+###Optional Widget
+
+This plugin has a built-in widget for the Dashboard that tells you the date and time of your last search engine ping.
+However, it is not enabled by default and must be added by clicking the 'cog' next to the heading 'Dashboard', clicking the 'New Widget' button, and selecting the 'Last Sitemap Ping Date' widget.
