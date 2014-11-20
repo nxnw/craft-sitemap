@@ -50,7 +50,7 @@
         }
     }
 
-    @media screen and (max-width: 560px) {
+    @media screen and (max-width: 643px) {
         .hide {
             display: none;
         }
@@ -73,18 +73,19 @@
 
     <table id="sitemap" class="sitemap data">
         <thead>
-            <tr class="centeralign">
-                <th>Inc<span class="hide">lude</span></th>
+            <tr>
+                <th class="centeralign">Inc<span class="hide">lude</span></th>
                 <th>Section</th>
-                <th class="hide">Entries</th>
-                <th class="hide1">URL Format</th>
-                <th><span class="hide1">Change</span> Freq<span class="hide">uency</span></th>
-                <th>Priority</th>
+                <th class="hide1 centeralign">Entries</th>
+                <th class="hide">URL Format</th>
+                <th class="centeralign">Freq<span class="hide">uency</span></th>
+                <th class="centeralign">Priority</th>
             </tr>
         </thead>
         <tbody>
         {% set sections = craft.sections.getAllSections() %}
         {% set cnt = 0 %}
+        {% set inc = false %}
         {% for section in sections %}
             {% set sect = craft.sitemap.getSectionById(section.id) %}
             {% if section.type != 'structure' and section.urlformat is not empty %}
@@ -105,15 +106,20 @@
                             value: sect.ping_date is empty ? '' : sect.ping_date|date('Y-m-d H:i:s')
                         }) }}
 
-                        {{ forms.checkbox({
+                        {{ forms.lightswitch({
                             name: 'sections['~cnt~'][included]',
-                            checked: sect.included is empty ? null : (sect.included ? 'checked' : null),
+                            on: sect.included is empty ? 'on' : (sect.included ? 'on' : null),
+                            small: 'small',
                             value: 1
                         }) }}
+
+                        {% if sect.included is not empty and sect.included %}
+                            {% set inc = true %}
+                        {% endif %}
                     </td>
                     <td>{{ section.name }}</td>
-                    <td class="hide centeralign">{{ craft.entries.section(section)|length }}</td>
-                    <td class="hide1">{{ (section.isHomepage() ? '<span data-icon="home" title="Homepage"></span>' : section.urlformat)|raw  }}</td>
+                    <td class="hide1 centeralign">{{ craft.entries.section(section)|length }}</td>
+                    <td class="hide">{{ (section.isHomepage() ? '<span data-icon="home" title="Homepage"></span>' : section.urlformat)|raw  }}</td>
                     <td class="centeralign">
                         {{ forms.select({
                             name: 'sections['~cnt~'][frequency]',
@@ -156,6 +162,11 @@
         <tfoot>
             <tr>
                 <th colspan="7">
+                    <a href="#" class="all">Select All</a> | <a href="#" class="none">Select None</a>
+                </th>
+            </tr>
+            <tr>
+                <th colspan="7">
                     {% set ping_date = craft.sitemap.getLastPingDate() %}
                     {% if ping_date is not null %}
                         {% if ping_date is not empty %}
@@ -177,10 +188,23 @@
 {% endset %}
 
 {% set myJs %}
-    $('.ping').on('click', function(e) {
+    $(document).on('click', '.ping', function() {
         $(this).closest('form').find('input[name=action]').val('sitemap/pingSections');
-
-    });
+    }).on('mousedown', '.all', function(e) {
+        e.preventDefault();
+        $('.lightswitch').each(function() {
+            if(!$(this).hasClass('on')) {
+                $(this).trigger('mousedown');
+            }
+        });
+    }).on('mousedown', '.none', function(e) {
+        e.preventDefault();
+        $('.lightswitch').each(function() {
+            if($(this).hasClass('on')) {
+                $(this).trigger('mousedown');
+            }
+        });
+    }).on('click', '.all,.none', function(e) {e.preventDefault();});
 
     new Craft.AdminTable({
         tableSelector: '#sitemap'
