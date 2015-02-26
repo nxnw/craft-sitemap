@@ -30,6 +30,6 @@ class SitemapPlugin extends BasePlugin
 
     public function onBeforeUninstall()
     {
-//        unlink($_SERVER['DOCUMENT_ROOT'] . '/sitemap.xml');
+        unlink($_SERVER['DOCUMENT_ROOT'] . '/sitemap.xml');
     }
 }
